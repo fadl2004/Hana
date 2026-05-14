@@ -21,10 +21,77 @@ html,body{
     height:100%;
     overflow:hidden;
     font-family:'Cairo',sans-serif;
-    touch-action:none; /* مهم للموبايل */
+    touch-action:none;
 }
 
-/* نفس باقي ستايلك بدون تغيير كبير */
+/* INTRO HEART (رجعته زي ما هو) */
+#introPage{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    background:linear-gradient(to bottom,#ffd6f6,#ffc2de);
+}
+
+.heart-3d{
+    width:200px;
+    height:200px;
+    position:relative;
+    animation:float 3s ease-in-out infinite;
+}
+
+.heart-3d::before,
+.heart-3d::after{
+    content:"";
+    position:absolute;
+    width:100px;
+    height:160px;
+    background:#ff2e63;
+    border-radius:100px 100px 0 0;
+}
+
+.heart-3d::before{
+    left:100px;
+    transform:rotate(-45deg);
+}
+
+.heart-3d::after{
+    left:0;
+    transform:rotate(45deg);
+}
+
+@keyframes float{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-20px);}
+}
+
+.enter-btn{
+    margin-top:40px;
+    padding:15px 30px;
+    border:none;
+    border-radius:30px;
+    background:#ff2e63;
+    color:#fff;
+    font-size:18px;
+}
+
+/* LABEL */
+.memory-label{
+    position:fixed;
+    bottom:60px;
+    left:50%;
+    transform:translateX(-50%);
+    color:white;
+    background:rgba(255,46,99,.7);
+    padding:10px 20px;
+    border-radius:20px;
+    font-weight:bold;
+    z-index:10;
+}
+
 canvas{display:block;}
 
 </style>
@@ -32,7 +99,10 @@ canvas{display:block;}
 
 <body>
 
+<!-- INTRO + القلب -->
 <div id="introPage">
+    <div class="heart-3d"></div>
+
     <button class="enter-btn" onclick="startExperience()">
         ادخل عالم الذكريات ✨
     </button>
@@ -46,26 +116,25 @@ canvas{display:block;}
 
 <script>
 
-let scene,camera,renderer,spotLight;
+let scene,camera,renderer;
 let memoryGroups=[];
 
 let scrollY=0;
-let currentTargetScroll=0;
+let targetScroll=0;
 
-/* TOUCH SUPPORT */
-let touchStartY = 0;
-let isTouching = false;
+/* TOUCH FIX */
+let touchStartY=0;
+let touching=false;
 
-const memories = [
-{img:'1.jpg', text:'حابب اقولك ان قلبك طيب وجميل'},
-{img:'2.jpeg', text:'ضحكتك'},
-{img:'3.jpeg', text:'أجمل وقت'},
-{img:'4.jpeg', text:'يا خلاثي يا ناس'},
-{img:'5.jpeg', text:'نينجا نينجا مفيش كلام 😂'},
-{img:'6.jpeg', text:'اكيد حد كل اكلك 😂 😂'},
-{img:'7.jpeg', text:'عليها باصة بتقول كلام كتير'},
-{img:'8.jpeg', text:'القصة جنان 😂 😂'},
-{video:'end.mp4', text:'الحضن ✨'}
+const memories=[
+{img:'1.jpg',text:'قلبك طيب وجميل'},
+{img:'2.jpeg',text:'ضحكتك'},
+{img:'3.jpeg',text:'أجمل وقت'},
+{img:'4.jpeg',text:'يا خلاثي'},
+{img:'5.jpeg',text:'😂😂'},
+{img:'6.jpeg',text:'اكل 😂'},
+{img:'7.jpeg',text:'كلام كتير'},
+{video:'end.mp4',text:'الحضن ✨'}
 ];
 
 function init(){
@@ -82,76 +151,53 @@ document.body.appendChild(renderer.domElement);
 
 scene.add(new THREE.AmbientLight(0xffffff,2));
 
-spotLight=new THREE.SpotLight(0xffffff,4);
-spotLight.position.set(0,20,15);
-scene.add(spotLight);
-
-/* floor */
-const floor=new THREE.Mesh(
-new THREE.PlaneGeometry(100,2000),
-new THREE.MeshStandardMaterial({color:0x7ed957})
-);
-floor.rotation.x=-Math.PI/2;
-scene.add(floor);
-
-/* carpet */
-const carpet=new THREE.Mesh(
-new THREE.PlaneGeometry(7,2000),
-new THREE.MeshStandardMaterial({color:0xff2e63})
-);
-carpet.rotation.x=-Math.PI/2;
-carpet.position.y=0.02;
-scene.add(carpet);
-
-/* MEMORIES */
 const loader=new THREE.TextureLoader();
 
 memories.forEach((m,i)=>{
 
 const group=new THREE.Group();
-let frame;
+let mesh;
 
 if(m.video){
+
 const video=document.createElement('video');
 video.src=m.video;
 video.loop=true;
 video.muted=true;
 video.playsInline=true;
 video.autoplay=true;
-
 video.play();
 
 const tex=new THREE.VideoTexture(video);
 
-frame=new THREE.Mesh(
-new THREE.PlaneGeometry(11,6),
+mesh=new THREE.Mesh(
+new THREE.PlaneGeometry(10,6),
 new THREE.MeshBasicMaterial({map:tex})
 );
 
-frame.position.set(0,5,-i*40);
+mesh.position.set(0,5,-i*40);
 
 }else{
 
 const tex=loader.load(m.img);
 
-frame=new THREE.Mesh(
+mesh=new THREE.Mesh(
 new THREE.PlaneGeometry(5.5,7.5),
 new THREE.MeshBasicMaterial({map:tex})
 );
 
-frame.position.set((i%2===0?6:-6),4.5,-i*40);
-frame.rotation.y=i%2===0?-0.2:0.2;
+mesh.position.set((i%2? -6:6),4.5,-i*40);
 }
 
-group.add(frame);
+group.add(mesh);
 scene.add(group);
 
 memoryGroups.push({
-mesh:frame,
-group,
+mesh,
 text:m.text,
 z:-i*40
 });
+
 });
 
 animate();
@@ -162,46 +208,43 @@ function startExperience(){
 
 document.getElementById("introPage").remove();
 
-/* تشغيل الموسيقى (لازم user click) */
-const music=document.getElementById("bgMusic");
-music.play().catch(()=>{});
+document.getElementById("bgMusic").play().catch(()=>{});
 
 gsap.to(camera.position,{z:5,duration:2});
 }
 
-/* MOUSE SCROLL */
+/* SCROLL MOUSE */
 window.addEventListener('wheel',(e)=>{
-currentTargetScroll+=e.deltaY*0.02;
+targetScroll+=e.deltaY*0.02;
 });
 
-/* TOUCH SCROLL (MOBILE FIX) */
+/* SCROLL TOUCH */
 window.addEventListener('touchstart',(e)=>{
 touchStartY=e.touches[0].clientY;
-isTouching=true;
+touching=true;
 });
 
 window.addEventListener('touchmove',(e)=>{
-if(!isTouching) return;
+if(!touching) return;
 
 let y=e.touches[0].clientY;
 let diff=touchStartY-y;
 
-currentTargetScroll+=diff*0.02;
-
+targetScroll+=diff*0.02;
 touchStartY=y;
 
 e.preventDefault();
 },{passive:false});
 
 window.addEventListener('touchend',()=>{
-isTouching=false;
+touching=false;
 });
 
 function animate(){
 
 requestAnimationFrame(animate);
 
-scrollY += (currentTargetScroll-scrollY)*0.08;
+scrollY += (targetScroll-scrollY)*0.08;
 
 camera.position.z = 10 - scrollY;
 
@@ -209,7 +252,7 @@ memoryGroups.forEach((m,i)=>{
 
 const dist=Math.abs(camera.position.z-(m.z+5));
 
-if(dist<20){
+if(dist<18){
 document.getElementById("label-container").innerText=m.text;
 }
 
@@ -229,4 +272,4 @@ init();
 </script>
 
 </body>
-</html>س
+</html>
