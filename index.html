@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Dream Heart Tunnel</title>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+    --pink:#ff8dc7;
+    --softPink:#ffc2de;
+    --sky:#ffd6f6;
+    --green:#7ed957;
+    --carpet:#ff2e63;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:'Cairo',sans-serif;
+
+    background:
+    linear-gradient(
+    to bottom,
+    #ffd6f6 0%,
+    #ffc2de 30%,
+    #d6f5ff 60%,
+    #c7ffd8 100%);
+}
+
+/* CLOUDS */
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+
+    background:
+    radial-gradient(circle at 15% 15%, rgba(255,255,255,.95) 0 60px, transparent 70px),
+    radial-gradient(circle at 35% 10%, rgba(255,255,255,.9) 0 80px, transparent 90px),
+    radial-gradient(circle at 65% 18%, rgba(255,255,255,.9) 0 70px, transparent 80px),
+    radial-gradient(circle at 85% 12%, rgba(255,255,255,.95) 0 60px, transparent 70px);
+
+    animation:cloudMove 25s linear infinite;
+
+    z-index:-1;
+    opacity:.8;
+}
+
+@keyframes cloudMove{
+    from{
+        transform:translateX(0);
+    }
+
+    to{
+        transform:translateX(-150px);
+    }
+}
+
+/* INTRO */
+
+#introPage{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+
+    background:
+    linear-gradient(
+    to bottom,
+    rgba(255,214,246,.95),
+    rgba(255,194,222,.95));
+
+    transition:1.5s;
+}
+
+.heart-scene{
+    perspective:1200px;
+}
+
+.heart-3d{
+    width:220px;
+    height:220px;
+    position:relative;
+
+    transform-style:preserve-3d;
+
+    animation:
+    rotateHeart 8s linear infinite,
+    floatHeart 3s ease-in-out infinite;
+}
+
+.heart-3d::before,
+.heart-3d::after{
+    content:"";
+
+    position:absolute;
+
+    width:120px;
+    height:190px;
+
+    background:
+    linear-gradient(
+    180deg,
+    #ffb3d9,
+    #ff2e63);
+
+    border-radius:120px 120px 0 0;
+
+    box-shadow:
+    0 0 40px rgba(255,46,99,.5),
+    inset 0 0 30px rgba(255,255,255,.4);
+}
+
+.heart-3d::before{
+    left:110px;
+
+    transform:
+    rotate(-45deg);
+
+    transform-origin:
+    0 100%;
+}
+
+.heart-3d::after{
+    left:0;
+
+    transform:
+    rotate(45deg);
+
+    transform-origin:
+    100% 100%;
+}
+
+@keyframes rotateHeart{
+    0%{
+        transform:
+        rotateY(0deg)
+        rotateX(0deg);
+    }
+
+    100%{
+        transform:
+        rotateY(360deg)
+        rotateX(10deg);
+    }
+}
+
+@keyframes floatHeart{
+    0%,100%{
+        translate:0 0;
+    }
+
+    50%{
+        translate:0 -20px;
+    }
+}
+
+.enter-btn{
+    margin-top:70px;
+
+    padding:18px 45px;
+
+    border:none;
+
+    border-radius:50px;
+
+    background:
+    linear-gradient(
+    135deg,
+    #ff8dc7,
+    #ff2e63);
+
+    color:white;
+
+    font-size:1.3rem;
+    font-weight:700;
+
+    cursor:pointer;
+
+    box-shadow:
+    0 0 30px rgba(255,46,99,.4);
+
+    transition:.4s;
+}
+
+.enter-btn:hover{
+    transform:scale(1.08);
+}
+
+/* TEXT */
+
+.memory-label{
+    position:fixed;
+
+    left:50%;
+    bottom:90px;
+
+    transform:translateX(-50%);
+
+    font-size:4vw;
+    font-weight:900;
+
+    color:white;
+
+    z-index:50;
+
+    padding:12px 40px;
+
+    border-radius:40px;
+
+    background:rgba(255,46,99,.75);
+
+    border:2px solid rgba(255,255,255,.4);
+
+    backdrop-filter:blur(12px);
+
+    box-shadow:
+    0 0 25px rgba(255,46,99,.5);
+
+    white-space:nowrap;
+
+    transition:1s;
+}
+
+.scroll-hint{
+    position:fixed;
+    bottom:20px;
+    width:100%;
+    text-align:center;
+
+    color:#ff2e63;
+
+    font-weight:700;
+
+    z-index:30;
+}
+
+canvas{
+    display:block;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- INTRO -->
+
+<div id="introPage">
+
+    <div class="heart-scene">
+        <div class="heart-3d"></div>
+    </div>
+
+    <button class="enter-btn" onclick="startExperience()">
+        ادخل عالم الذكريات ✨
+    </button>
+
+</div>
+
+<div class="memory-label" id="label-container"></div>
+
+<div class="scroll-hint">
+    استخدم Scroll للتحرك داخل الرحلة
+</div>
+
+<!-- MUSIC -->
+
+<audio id="bgMusic" loop autoplay muted playsinline>
+    <source src="/ssstik.io_1778745070621.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+
+    const music = document.getElementById("bgMusic");
+
+// محاولة تشغيل تلقائي
+window.addEventListener("load", () => {
+    music.play().catch(() => {
+        console.log("Autoplay blocked");
+    });
+});
+
+// أول لمس يشغل الصوت الحقيقي (مهم للموبايل)
+document.addEventListener("touchstart", () => {
+    music.muted = false;
+    music.play();
+}, { once: true });
+
+/* VARIABLES */
+
+let scene,camera,renderer;
+let spotLight;
+
+let memoryGroups=[];
+
+let scrollY=0;
+let currentTargetScroll=0;
+
+/* ========================= */
+/* IMAGES + VIDEO */
+/* ========================= */
+
+const memories=[
+
+{
+img:'1.jpg',
+text:'حابب اقولك ان قلبك طيب وجميلض'
+},
+
+{
+img:'2.jpeg',
+text:'ضحكتك'
+},
+
+{
+img:'3.jpeg',
+text:'أجمل وقت'
+},
+
+{
+img:'4.jpeg',
+text:'يا خلاثي يا ناس'
+},
+
+{
+img:'5.jpeg',
+text:'نينجا نينجا مفيش كلام 😂'
+},
+
+{
+img:'6.jpeg',
+text:'اكيد حد كل اكلك  😂 😂'
+},
+
+{
+img:'7.jpeg',
+text:'عليها باصة بتقول كلام كتير '
+},
+
+{
+img:'8.jpeg',
+text:'ونيجي للأخيرة ونقول القصة جنان  😂 😂'
+},
+
+{
+video:'end.mp4',
+text:'ونيجي للحضن الي بيقول كلام كتير ✨'
+}
+
+];
+
+/* INIT */
+
+function init(){
+
+scene=new THREE.Scene();
+
+scene.fog=new THREE.FogExp2(
+0xffd6f6,
+0.018
+);
+
+/* CAMERA */
+
+camera=new THREE.PerspectiveCamera(
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+2000
+);
+
+camera.position.set(0,2,10);
+
+/* RENDERER */
+
+renderer=new THREE.WebGLRenderer({
+antialias:true,
+alpha:true
+});
+
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+
+renderer.setPixelRatio(
+window.devicePixelRatio
+);
+
+document.body.appendChild(renderer.domElement);
+
+/* LIGHTS */
+
+const ambient=new THREE.AmbientLight(
+0xffffff,
+2.5
+);
+
+scene.add(ambient);
+
+spotLight=new THREE.SpotLight(
+0xffffff,
+4
+);
+
+spotLight.position.set(0,20,15);
+
+spotLight.angle=.45;
+spotLight.penumbra=1;
+
+scene.add(spotLight);
+
+/* FLOOR */
+
+const floorGeo=new THREE.PlaneGeometry(
+100,
+2000
+);
+
+const floorMat=new THREE.MeshStandardMaterial({
+
+color:0x7ed957,
+
+roughness:1
+
+});
+
+const floor=new THREE.Mesh(
+floorGeo,
+floorMat
+);
+
+floor.rotation.x=-Math.PI/2;
+
+scene.add(floor);
+
+/* RED CARPET */
+
+const carpetGeo=new THREE.PlaneGeometry(
+7,
+2000
+);
+
+const carpetMat=new THREE.MeshStandardMaterial({
+
+color:0xff2e63,
+
+emissive:0xff2e63,
+
+emissiveIntensity:.4
+
+});
+
+const carpet=new THREE.Mesh(
+carpetGeo,
+carpetMat
+);
+
+carpet.rotation.x=-Math.PI/2;
+
+carpet.position.y=.02;
+
+scene.add(carpet);
+
+/* STARS */
+
+const starsGeometry=new THREE.BufferGeometry();
+
+const starsCount=2500;
+
+const positions=[];
+
+for(let i=0;i<starsCount;i++){
+
+positions.push(
+(Math.random()-0.5)*300
+);
+
+positions.push(
+Math.random()*120
+);
+
+positions.push(
+(Math.random()-0.5)*2000
+);
+
+}
+
+starsGeometry.setAttribute(
+'position',
+new THREE.Float32BufferAttribute(
+positions,
+3
+)
+);
+
+const starsMaterial=new THREE.PointsMaterial({
+
+size:.2,
+
+color:0xffffff
+
+});
+
+const stars=new THREE.Points(
+starsGeometry,
+starsMaterial
+);
+
+scene.add(stars);
+
+/* IMAGES + VIDEO */
+
+const loader=new THREE.TextureLoader();
+
+memories.forEach((m,i)=>{
+
+const group=new THREE.Group();
+
+let frame;
+
+/* VIDEO */
+
+if(m.video){
+
+const video=document.createElement('video');
+
+video.src=m.video;
+
+video.loop=true;
+video.muted=true;
+video.autoplay=true;
+video.playsInline=true;
+
+video.play();
+
+const texture=new THREE.VideoTexture(video);
+
+texture.colorSpace = THREE.SRGBColorSpace;
+
+const frameGeo=new THREE.PlaneGeometry(11,6.2);
+
+const frameMat=new THREE.MeshBasicMaterial({
+
+map:texture
+
+});
+
+frame=new THREE.Mesh(frameGeo,frameMat);
+
+/* VIDEO IN CENTER */
+
+frame.position.set(
+0,
+5,
+-i*40
+);
+
+}
+
+/* IMAGE */
+
+else{
+
+const texture=loader.load(m.img);
+
+texture.colorSpace = THREE.SRGBColorSpace;
+
+/* KEEP NATURAL COLORS */
+
+const frameGeo=new THREE.PlaneGeometry(
+5.5,
+7.5
+);
+
+const frameMat=new THREE.MeshBasicMaterial({
+
+map:texture
+
+});
+
+frame=new THREE.Mesh(
+frameGeo,
+frameMat
+);
+
+const side=i%2===0 ? 6 : -6;
+
+frame.position.set(
+side,
+4.5,
+-i*40
+);
+
+frame.rotation.y=
+i%2===0 ? -0.22 : 0.22;
+
+}
+
+/* FRAME SHADOW */
+
+frame.castShadow=true;
+
+group.add(frame);
+
+/* GLOW BEHIND IMAGE */
+
+const glowGeo = new THREE.PlaneGeometry(6,8);
+
+const glowMat = new THREE.MeshBasicMaterial({
+
+color:0xff8dc7,
+transparent:true,
+opacity:0.18
+
+});
+
+const glow = new THREE.Mesh(glowGeo,glowMat);
+
+glow.position.copy(frame.position);
+
+glow.position.z -= 0.1;
+
+glow.rotation.copy(frame.rotation);
+
+group.add(glow);
+
+/* TEXT */
+
+const canvas=document.createElement('canvas');
+
+canvas.width=1024;
+canvas.height=256;
+
+const ctx=canvas.getContext('2d');
+
+ctx.fillStyle='white';
+
+ctx.font='bold 70px Cairo';
+
+ctx.shadowColor='#ff2e63';
+ctx.shadowBlur=25;
+
+ctx.fillText(
+m.text,
+80,
+140
+);
+
+const textTexture=
+new THREE.CanvasTexture(canvas);
+
+const textMat=
+new THREE.MeshBasicMaterial({
+
+map:textTexture,
+
+transparent:true
+
+});
+
+const textMesh=
+new THREE.Mesh(
+
+new THREE.PlaneGeometry(
+4,
+1.2
+),
+
+textMat
+
+);
+
+if(m.video){
+
+textMesh.position.set(
+0,
+0,
+-i*40
+);
+
+}else{
+
+textMesh.position.set(
+i%2===0 ? -5 : 5,
+0,
+-i*40
+);
+
+}
+
+group.add(textMesh);
+
+scene.add(group);
+
+memoryGroups.push({
+
+mesh:frame,
+
+group:group,
+
+text:m.text,
+
+z:-i*40
+
+});
+
+});
+
+animate();
+
+}
+
+/* START */
+
+function startExperience(){
+
+const intro=
+document.getElementById('introPage');
+
+intro.style.opacity='0';
+
+intro.style.pointerEvents='none';
+
+setTimeout(()=>{
+
+intro.remove();
+
+},1500);
+
+document.getElementById('bgMusic').play();
+
+gsap.to(camera.position,{
+
+z:5,
+
+duration:3,
+
+ease:"power2.out"
+
+});
+
+}
+
+/* SCROLL */
+
+window.addEventListener('wheel',(e)=>{
+
+currentTargetScroll+=e.deltaY*0.018;
+
+});
+/* ========================= */
+/* TOUCH SCROLL (MOBILE) */
+/* ========================= */
+
+let touchStartY = 0;
+let touchEndY = 0;
+
+window.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+});
+
+window.addEventListener('touchmove', (e) => {
+    touchEndY = e.touches[0].clientY;
+
+    let delta = touchStartY - touchEndY;
+
+    currentTargetScroll += delta * 0.02;
+
+    touchStartY = touchEndY; // يخلي الحركة سلسة زي السكروول
+});
+
+/* ANIMATION */
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+scrollY+=
+(currentTargetScroll-scrollY)*0.035;
+
+camera.position.z=10-scrollY;
+
+camera.position.x=
+Math.sin(scrollY*0.015)*0.7;
+
+spotLight.position.x=
+Math.sin(Date.now()*0.001)*5;
+
+memoryGroups.forEach((m,i)=>{
+
+m.mesh.position.y=
+4.5+
+Math.sin(
+Date.now()*0.001+i
+)*0.18;
+
+const dist=Math.abs(
+camera.position.z-(m.z+5)
+);
+
+if(dist<18){
+
+const label=
+document.getElementById(
+'label-container'
+);
+
+label.innerText=m.text;
+
+label.style.opacity=
+Math.max(
+0,
+1-dist/18
+);
+
+gsap.to(m.mesh.scale,{
+
+x:1.08,
+y:1.08,
+
+duration:1
+
+});
+
+}else{
+
+gsap.to(m.mesh.scale,{
+
+x:1,
+y:1,
+
+duration:1
+
+});
+
+}
+
+});
+
+renderer.render(
+scene,
+camera
+);
+
+}
+
+/* RESIZE */
+
+window.addEventListener(
+'resize',
+()=>{
+
+camera.aspect=
+window.innerWidth/
+window.innerHeight;
+
+camera.updateProjectionMatrix();
+
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+
+}
+);
+
+init();
+
+</script>
+
+</body>
+</html>
