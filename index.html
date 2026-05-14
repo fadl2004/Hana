@@ -757,6 +757,26 @@ window.addEventListener('wheel',(e)=>{
 currentTargetScroll+=e.deltaY*0.018;
 
 });
+    /* ========================= */
+/* TOUCH SCROLL (MOBILE) */
+/* ========================= */
+
+let touchStartY = 0;
+let touchEndY = 0;
+
+window.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+});
+
+window.addEventListener('touchmove', (e) => {
+    touchEndY = e.touches[0].clientY;
+
+    let delta = touchStartY - touchEndY;
+
+    currentTargetScroll += delta * 0.02;
+
+    touchStartY = touchEndY; // يخلي الحركة سلسة زي السكروول
+});
 
 /* ANIMATION */
 
